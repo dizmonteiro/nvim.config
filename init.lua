@@ -15,6 +15,8 @@ require("plugins.cmp")
 require("plugins.flash")
 require("plugins.blink-pairs")
 require("plugins.latex")
+require("plugins.trouble")
+require("plugins.grug-far")
 require("plugins.which-key")
 -- require("plugins.luasnip-latex-snippets")
 

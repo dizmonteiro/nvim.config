@@ -8,13 +8,9 @@ require("mason").setup({
     "lua-language-server",
     "stylua",
     "marksman",
-    -- ty
-    --  biome (keywords: json, javascript, typescript)
-    --
-    -- ruff (keywords: python)
-    -- powershell-editor-services (keywords: powershell)
-    -- lua-language-server (keywords: lua)
-    -- stylua (keywords: lua, luau)
+    "biome",
+    "ruff",
+    "powershell-editor-services",
   },
 })
 vim.keymap.set("n", "<leader>cm", "<cmd>Mason<CR>", { silent = true })
@@ -77,9 +73,40 @@ vim.lsp.config("marksman", {
   filetypes = { "markdown" },
 })
 
+-- Biome (JavaScript, TypeScript, JSON)
+vim.lsp.config("biome", {
+  cmd = { "biome", "lsp-proxy" },
+  filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "json", "jsonc" },
+  root_markers = { "biome.json", "biome.jsonc", ".git" },
+})
+
+-- Ruff (Python linter/formatter)
+vim.lsp.config("ruff", {
+  cmd = { "ruff", "server" },
+  filetypes = { "python" },
+  root_markers = { "pyproject.toml", "ruff.toml", ".ruff.toml", ".git" },
+})
+
+-- PowerShell
+local ps_es = vim.fn.stdpath("data") .. "/mason/packages/powershell-editor-services"
+vim.lsp.config("powershell_es", {
+  cmd = {
+    "pwsh",
+    "-NoLogo",
+    "-NoProfile",
+    "-Command",
+    "& '" .. ps_es .. "/PowerShellEditorServices/Start-EditorServices.ps1' -Stdio",
+  },
+  filetypes = { "ps1", "psm1", "psd1" },
+  root_markers = { ".git" },
+})
+
 -- ============================================================================
 -- Enable servers (filetype-scoped, not global)
 -- ============================================================================
 
 vim.lsp.enable("lua_ls")
 vim.lsp.enable("marksman")
+vim.lsp.enable("biome")
+vim.lsp.enable("ruff")
+vim.lsp.enable("powershell_es")
