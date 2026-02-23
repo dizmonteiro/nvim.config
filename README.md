@@ -67,6 +67,13 @@ A modern, minimal Neovim configuration targeting **Neovim 12.0+** with native pa
 |--------|---------|
 | [flash.nvim](https://github.com/folke/flash.nvim) | Fast motion/jump |
 
+### Diagnostics & Search
+
+| Plugin | Purpose |
+|--------|---------|
+| [trouble.nvim](https://github.com/folke/trouble.nvim) | Diagnostics, references, quickfix list |
+| [grug-far.nvim](https://github.com/MagicDuck/grug-far.nvim) | Find and replace |
+
 ### Language Support
 
 | Plugin | Purpose |
@@ -96,6 +103,8 @@ init.lua
         ├── flash.lua           ← Motion
         ├── blink-pairs.lua     ← Bracket pairs
         ├── latex.lua           ← LaTeX support
+        ├── trouble.lua         ← Diagnostics list
+        ├── grug-far.lua        ← Find and replace
         └── which-key.lua       ← Keybinding help
 ```
 
@@ -126,6 +135,16 @@ init.lua
 | `<leader>ca` | n | Code action |
 | `<leader>cm` | n | Open Mason |
 
+#### Configured LSP Servers
+
+| Server | Languages |
+|--------|-----------|
+| lua_ls | Lua |
+| marksman | Markdown |
+| biome | JavaScript, TypeScript, JSON |
+| ruff | Python |
+| powershell_es | PowerShell |
+
 ### File Navigation
 
 | Key | Mode | Description |
@@ -149,6 +168,25 @@ init.lua
 | Key | Mode | Description |
 |-----|------|-------------|
 | `s` | n,x,o | Flash jump |
+
+### Diagnostics (trouble.nvim)
+
+| Key | Mode | Description |
+|-----|------|-------------|
+| `<leader>xx` | n | Toggle diagnostics |
+| `<leader>xX` | n | Buffer diagnostics |
+| `<leader>cs` | n | Document symbols |
+| `<leader>cl` | n | LSP definitions/references |
+| `<leader>xL` | n | Location list |
+| `<leader>xQ` | n | Quickfix list |
+
+### Search & Replace (grug-far.nvim)
+
+| Key | Mode | Description |
+|-----|------|-------------|
+| `<leader>sr` | n | Search and replace |
+| `<leader>sw` | n | Search word under cursor |
+| `<leader>sv` | x | Search visual selection |
 
 ### Surround (mini.surround)
 

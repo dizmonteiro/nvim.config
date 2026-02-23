@@ -10,9 +10,14 @@ require("mason").setup({
     "marksman",
     "biome",
     "ruff",
+    "ty",
     "powershell-editor-services",
+    "ts_ls",
+    "css-lsp",
+    "yaml-language-server",
   },
 })
+
 vim.keymap.set("n", "<leader>cm", "<cmd>Mason<CR>", { silent = true })
 -- vim.lsp.enable("clangd")
 vim.api.nvim_create_autocmd("LspAttach", {
@@ -41,6 +46,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
   end,
 })
 
+-- lua-language-server
 vim.lsp.config("lua_ls", {
   cmd = { "lua-language-server" },
   filetypes = { "lua", "luau" },
@@ -73,40 +79,112 @@ vim.lsp.config("marksman", {
   filetypes = { "markdown" },
 })
 
--- Biome (JavaScript, TypeScript, JSON)
+-- Biome (web tool chain, linter and formatter as a language server)
 vim.lsp.config("biome", {
-  cmd = { "biome", "lsp-proxy" },
-  filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "json", "jsonc" },
-  root_markers = { "biome.json", "biome.jsonc", ".git" },
+  -- cmd = { "biome", "lsp-proxy" },
+  -- filetypes = {
+  --   "javascript",
+  --   "javascriptreact",
+  --   "typescript",
+  --   "typescriptreact",
+  --   "json",
+  --   "jsonc",
+  --   "css",
+  --   "vue",
+  --   "html",
+  -- },
+  root_markers = { "biome.json", "biome.jsonc", ".git", "package.json" },
 })
 
--- Ruff (Python linter/formatter)
+-- Ruff (Python linter/formatter as a server)
 vim.lsp.config("ruff", {
   cmd = { "ruff", "server" },
   filetypes = { "python" },
   root_markers = { "pyproject.toml", "ruff.toml", ".ruff.toml", ".git" },
 })
 
+-- ty language server
+vim.lsp.config("ty", {
+  cmd = { "ty", "server" },
+  filetypes = { "python" },
+  root_markers = { "ty.toml", "pyproject.toml", "setup.py", "requirements.txt", ".git" },
+})
+
 -- PowerShell
-local ps_es = vim.fn.stdpath("data") .. "/mason/packages/powershell-editor-services"
+local ps_es = vim.fn.stdpath("data") .. "/mason/packages/powershell-editor-services/PowerShellEditorServices"
 vim.lsp.config("powershell_es", {
-  cmd = {
-    "pwsh",
-    "-NoLogo",
-    "-NoProfile",
-    "-Command",
-    "& '" .. ps_es .. "/PowerShellEditorServices/Start-EditorServices.ps1' -Stdio",
-  },
-  filetypes = { "ps1", "psm1", "psd1" },
+  shell = "pwsh",
+  bundle_path = ps_es,
+  -- cmd = {
+  --   "pwsh",
+  --   "-NoLogo",
+  --   "-NoProfile",
+  --   "-Command",
+  --   "& '" .. ps_es .. "/PowerShellEditorServices/Start-EditorServices.ps1' -Stdio",
+  -- },
+  -- filetypes = { "ps1", "psm1", "psd1" },
   root_markers = { ".git" },
 })
 
--- ============================================================================
--- Enable servers (filetype-scoped, not global)
--- ============================================================================
+vim.lsp.config("cssls", {
+  cmd = { "vscode-css-language-server", "--stdio" },
+  filetypes = { "css", "scss", "less" },
+  init_options = { provideFormatter = false },
+  root_markers = { "package.json", ".git" },
+})
+
+vim.lsp.config("ts_ls", {
+  on_attach = function(client)
+    client.server_capabilities.documentFormattingProvider = false
+    client.server_capabilities.documentRangeFormattingProvider = false
+  end,
+})
+
+-- yaml-language-server uses default config
+-- vim.lsp.config("yamlls", {
+--
+-- })
 
 vim.lsp.enable("lua_ls")
 vim.lsp.enable("marksman")
 vim.lsp.enable("biome")
 vim.lsp.enable("ruff")
+vim.lsp.enable("ty")
 vim.lsp.enable("powershell_es")
+vim.lsp.enable("cssls")
+vim.lsp.enable("ts_ls")
+vim.lsp.enable("yamlls")
+
+local group = vim.api.nvim_create_augroup("LspFormatOnSaveWeb", {})
+vim.api.nvim_create_autocmd("BufWritePre", {
+  group = group,
+  pattern = { "*.ts", "*.tsx", "*.js", "*.jsx", "*.json", "*.css", "*.html", "*.yaml" },
+  callback = function(args)
+    local ft = vim.bo[args.buf].filetype
+
+    -- map filetype -> preferred LSP client
+    local formatter_by_ft = {
+      javascript = "biome",
+      javascriptreact = "biome",
+      typescript = "biome",
+      typescriptreact = "biome",
+      json = "biome",
+      jsonc = "biome",
+      css = "biome",
+      yaml = "yamlls",
+    }
+
+    local preferred = formatter_by_ft[ft]
+    if not preferred then
+      return
+    end
+
+    vim.lsp.buf.format({
+      bufnr = args.buf,
+      async = false,
+      filter = function(client)
+        return client.name == preferred
+      end,
+    })
+  end,
+})

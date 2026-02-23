@@ -32,3 +32,4 @@ vim.opt.timeoutlen = 300
 vim.opt.expandtab = true
 vim.opt.smarttab = true
 -- vim.cmd("filetype plugin indent on")
+vim.o.fileformats = "unix,dos"

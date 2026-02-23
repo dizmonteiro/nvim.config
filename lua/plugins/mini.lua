@@ -29,7 +29,7 @@ require("mini.icons").setup({
 
 require("mini.files").setup({
   windows = {
-    max_number = 3,
+    max_number = 2,
   },
 })
 
@@ -52,7 +52,16 @@ vim.api.nvim_create_autocmd({ "BufEnter", "InsertEnter" }, {
   once = true,
   callback = function()
     require("mini.splitjoin").setup()
-    require("mini.diff").setup()
+    require("mini.diff").setup({
+      view = {
+        style = "sign",
+        signs = {
+          add = "▎",
+          change = "▎",
+          delete = "",
+        },
+      },
+    })
     require("mini.ai").setup({
       mappings = {
         goto_left = "[",
@@ -78,7 +87,6 @@ vim.api.nvim_create_autocmd({ "BufEnter", "InsertEnter" }, {
 require("mini.pick").setup()
 
 local MiniPick = require("mini.pick")
-
 local function pick_oldfiles(opts)
   opts = opts or {}
 
