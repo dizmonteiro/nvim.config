@@ -5,21 +5,15 @@ vim.pack.add({
     src = "https://github.com/saghen/blink.cmp",
     name = "blink.cmp",
     version = vim.version.range("*"),
-    -- version = blink_cmp_version,
+  },
+  {
+    src = "https://github.com/saghen/blink.compat",
+    name = "blink.compat",
+    version = vim.version.range("*"),
   },
   { src = "https://github.com/folke/lazydev.nvim", name = "lazydev" },
+  { src = "https://github.com/micangl/cmp-vimtex", name = "cmp-vimtex" },
 })
-
--- local blink_cmp_binary = "https://github.com/saghen/blink.cmp/releases/download/" ..
--- blink_cmp_version .. "/x86_64-pc-windows-msvc.dll"
--- local blink_cmp_dist = vim.fn.stdpath("data") .. "/site/pack/core/opt/blink.cmp/target/release/libblink_cmp_fuzzy.dll"
--- vim.fn.system({
---   "curl",
---   "-L",
---   "-o",
---   blink_cmp_dist,
---   blink_cmp_binary,
--- })
 
 vim.api.nvim_create_autocmd({ "InsertEnter", "CmdlineEnter" }, {
   group = vim.api.nvim_create_augroup("SetupCompletion", { clear = true }),
@@ -44,6 +38,7 @@ vim.api.nvim_create_autocmd({ "InsertEnter", "CmdlineEnter" }, {
         default = { "lsp", "path", "snippets", "buffer" },
         per_filetype = {
           lua = { inherit_defaults = true, "lazydev" },
+          -- tex = { "vimtex", "path", "snippets", "buffer" },
         },
         providers = {
           lazydev = {
@@ -51,6 +46,11 @@ vim.api.nvim_create_autocmd({ "InsertEnter", "CmdlineEnter" }, {
             module = "lazydev.integrations.blink",
             score_offset = 100,
           },
+          -- vimtex = {
+          --   name = "vimtex",
+          --   module = "blink.compat.source",
+          --   score_offset = 120,
+          -- },
         },
       },
 
@@ -58,14 +58,14 @@ vim.api.nvim_create_autocmd({ "InsertEnter", "CmdlineEnter" }, {
         menu = {
           draw = {
             columns = { { "kind_icon" }, { "label", "label_description", gap = 1 }, { "kind" }, { "source_name" } },
-            -- components = {
-            --   item_idx = {
-            --     text = function(ctx)
-            --       return ctx.idx == 10 and "0" or ctx.idx >= 10 and " " or tostring(ctx.idx)
-            --     end,
-            --     highlight = "BlinkCmpItemIdx", -- optional, only if you want to change its color
-            --   },
-            -- },
+            components = {
+              item_idx = {
+                text = function(ctx)
+                  return ctx.idx == 10 and "0" or ctx.idx >= 10 and " " or tostring(ctx.idx)
+                end,
+                highlight = "BlinkCmpItemIdx", -- optional, only if you want to change its color
+              },
+            },
           },
         },
         -- list = {

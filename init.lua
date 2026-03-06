@@ -1,40 +1,44 @@
+local startup = require("utils.startup")
+
 require("config.options")
 require("config.keymaps")
 require("config.autocmds")
 
-require("plugins.lsp")
-require("plugins.catppuccin")
-require("plugins.mini")
-require("plugins.lualine")
-require("plugins.alpha")
-require("plugins.treesitter")
-require("plugins.ibl")
-require("plugins.conform")
-require("plugins.luasnip")
-require("plugins.cmp")
-require("plugins.flash")
-require("plugins.blink-pairs")
-require("plugins.latex")
-require("plugins.trouble")
-require("plugins.grug-far")
-require("plugins.which-key")
--- require("plugins.luasnip-latex-snippets")
-
--- _G.ts_in_mathzone = function()
---   local node = vim.treesitter.get_node({ ignore_injections = false })
---   while node do
---     local t = node:type()
---     -- print(t)
---     if
---       t == "inline_formula"
---       or t == "displayed_equation"
---       or t == "math_environment"
---       or t == "inline_math"
---       or t == "display_math"
---     then
---       return true, t
+-- vim.api.nvim_create_autocmd("VimEnter", {
+--   group = vim.api.nvim_create_augroup("ShowAlpha", { clear = true }),
+--   once = true,
+--   callback = function()
+--     if vim.fn.argc() == 0 and vim.fn.line2byte(vim.fn.line("$")) == -1 then
+--       vim.cmd("Alpha")
 --     end
---     node = node:parent()
---   end
---   return false, nil
--- end
+--   end,
+-- })
+
+local function load_plugin(name)
+  local start_t = vim.loop.hrtime()
+  require("plugins." .. name)
+  local elapsed = (vim.loop.hrtime() - start_t) / 1e6
+  startup.timings[name] = elapsed
+end
+
+require("plugins.alpha")
+
+load_plugin("lsp")
+load_plugin("catppuccin")
+load_plugin("mini")
+load_plugin("lualine")
+load_plugin("treesitter")
+load_plugin("fzf-lua")
+load_plugin("ibl")
+load_plugin("conform")
+load_plugin("luasnip")
+load_plugin("cmp")
+load_plugin("flash")
+load_plugin("blink-pairs")
+load_plugin("latex")
+load_plugin("trouble")
+load_plugin("outline")
+load_plugin("grug-far")
+load_plugin("scratch")
+load_plugin("toggleterm")
+load_plugin("which-key")

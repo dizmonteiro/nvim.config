@@ -72,6 +72,7 @@ A modern, minimal Neovim configuration targeting **Neovim 12.0+** with native pa
 | Plugin | Purpose |
 |--------|---------|
 | [trouble.nvim](https://github.com/folke/trouble.nvim) | Diagnostics, references, quickfix list |
+| [outline.nvim](https://github.com/hedyhli/outline.nvim) | Code outline sidebar |
 | [grug-far.nvim](https://github.com/MagicDuck/grug-far.nvim) | Find and replace |
 
 ### Language Support
@@ -104,6 +105,7 @@ init.lua
         ├── blink-pairs.lua     ← Bracket pairs
         ├── latex.lua           ← LaTeX support
         ├── trouble.lua         ← Diagnostics list
+        ├── outline.lua         ← Code outline
         ├── grug-far.lua        ← Find and replace
         └── which-key.lua       ← Keybinding help
 ```
@@ -125,15 +127,42 @@ init.lua
 | `<localleader>qt` | n | Quit Neovim |
 | `<localleader>wq` | n | Save and quit |
 
+### Indentation Settings
+
+Indentation is managed via filetype plugins (`after/ftplugin/`). **Treesitter indentation is disabled** for consistency.
+
+| Language | Spaces | File |
+|----------|---------|-------|
+| Python | 4 | `after/ftplugin/python.lua` |
+| Julia | 4 | `after/ftplugin/julia.lua` |
+| Lua | 2 | `after/ftplugin/lua.lua` |
+| JavaScript/TypeScript | 2 | `after/ftplugin/{javascript,typescript}.lua` |
+| HTML/CSS/SCSS | 2 | `after/ftplugin/{html,css,scss}.lua` |
+| JSON/YAML/TOML | 2 | `after/ftplugin/{json,jsonc,yaml,toml}.lua` |
+| LaTeX | 2 | `after/ftplugin/tex.lua` |
+| Markdown | 2 | `after/ftplugin/markdown.lua` |
+| R | 2 | `after/ftplugin/r.lua` |
+| Bash/Shell/PowerShell | 2 | `after/ftplugin/{bash,sh,powershell}.lua` |
+
 ### LSP
+
+LSP is **opt-in** by default. Servers don't start until you enable them.
 
 | Key | Mode | Description |
 |-----|------|-------------|
-| `gd` | n | Go to definition |
-| `K` | n | Hover documentation |
+| `<leader>ls` | n | Enable LSP auto-start |
 | `<leader>rn` | n | Rename symbol |
 | `<leader>ca` | n | Code action |
 | `<leader>cm` | n | Open Mason |
+| `gd` | n | Go to definition |
+| `K` | n | Hover documentation |
+
+#### Commands
+
+| Command | Description |
+|---------|-------------|
+| `:LspStart` | Enable LSP auto-start for all servers |
+| `:LspStop` | Stop all LSP clients and disable |
 
 #### Configured LSP Servers
 
@@ -141,9 +170,15 @@ init.lua
 |--------|-----------|
 | lua_ls | Lua |
 | marksman | Markdown |
-| biome | JavaScript, TypeScript, JSON |
+| biome | JavaScript, TypeScript, JSON, CSS |
 | ruff | Python |
+| ty | Python (type checker) |
 | powershell_es | PowerShell |
+| cssls | CSS, SCSS, Less |
+| ts_ls | TypeScript, JavaScript |
+| yamlls | YAML |
+| texlab | LaTeX |
+| julials | Julia |
 
 ### File Navigation
 
@@ -152,6 +187,22 @@ init.lua
 | `<leader>e` | n | Open mini.files |
 | `<localleader>ec` | n | Open config directory |
 | `<localleader>es` | n | Open snippets directory |
+
+### Dashboard (alpha-nvim)
+
+Dashboard buttons available on start screen:
+
+| Key | Description |
+|-----|-------------|
+| `n` | New file |
+| `f` | Find file (mini.files) |
+| `r` | Recent files |
+| `g` | Find text (grep) |
+| `s` | Settings (open config) |
+| `p` | Update plugins |
+| `m` | Mason (LSP servers) |
+| `t` | Startup time report |
+| `q` | Quit |
 
 ### Snippets (LuaSnip)
 
@@ -179,6 +230,13 @@ init.lua
 | `<leader>cl` | n | LSP definitions/references |
 | `<leader>xL` | n | Location list |
 | `<leader>xQ` | n | Quickfix list |
+
+### Code Outline (outline.nvim)
+
+| Key | Mode | Description |
+|-----|------|-------------|
+| `<leader>o` | n | Toggle outline sidebar |
+| `<leader>co` | n | Focus outline |
 
 ### Search & Replace (grug-far.nvim)
 
@@ -263,6 +321,7 @@ The `lua/utils/` directory contains helper modules:
 | `ts_utils` | Treesitter-based math zone detection for snippets |
 | `tex_utils` | VimTeX-based math zone detection (alternative) |
 | `luasnip-snip_env` | Global snippet environment (aliases like `s`, `i`, `fmta`) |
+| `startup` | Plugin startup time tracking and reporting |
 
 ## Configuration
 
@@ -286,6 +345,7 @@ column_width = 120
 |---------|-------------|
 | `:PackUpdate` | Update plugins |
 | `:Mason` | Manage LSP servers |
+| `:StartupTime` | Show plugin startup times |
 | `:FCN` | Search for `FCN=` in buffer (custom) |
 
 ## License

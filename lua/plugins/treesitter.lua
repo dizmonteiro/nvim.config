@@ -30,7 +30,7 @@ local ts_parsers = {
   "julia",
   "html",
   "javascript",
-  "typescript"
+  "typescript",
 }
 
 nts.setup({
@@ -72,11 +72,9 @@ vim.api.nvim_create_autocmd("FileType", {
     if installed[lang] then
       -- enable_treesitter(buf, ft)
       vim.treesitter.start(buf)
-      -- if ft == "tex" or ft == "markdown" then
-      -- vim.bo[buf].syntax = "ON"
-      -- end
-      -- indentation
-      vim.bo[buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+      if ft == "tex" or ft == "markdown" then
+        vim.bo[buf].syntax = "ON"
+      end
 
       -- folding
       vim.wo[0][0].foldmethod = "expr"

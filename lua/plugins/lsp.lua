@@ -15,11 +15,13 @@ require("mason").setup({
     "ts_ls",
     "css-lsp",
     "yaml-language-server",
+    "texlab",
+    "tex-fmt",
   },
 })
 
 vim.keymap.set("n", "<leader>cm", "<cmd>Mason<CR>", { silent = true })
--- vim.lsp.enable("clangd")
+
 vim.api.nvim_create_autocmd("LspAttach", {
   group = vim.api.nvim_create_augroup("SetupLSP", {}),
   callback = function(ev)
@@ -46,83 +48,45 @@ vim.api.nvim_create_autocmd("LspAttach", {
   end,
 })
 
--- lua-language-server
 vim.lsp.config("lua_ls", {
   cmd = { "lua-language-server" },
   filetypes = { "lua", "luau" },
   root_markers = { { ".luarc.json", ".luarc.jsonc" }, ".git" },
   settings = {
     Lua = {
-      runtime = {
-        version = "LuaJIT",
-      },
-      diagnostics = {
-        globals = { "vim" },
-      },
-      workspace = {
-        -- lightweight and sufficient
-        library = {
-          vim.env.VIMRUNTIME,
-        },
-        checkThirdParty = false,
-      },
-      telemetry = {
-        enable = false,
-      },
+      runtime = { version = "LuaJIT" },
+      diagnostics = { globals = { "vim" } },
+      workspace = { library = { vim.env.VIMRUNTIME }, checkThirdParty = false },
+      telemetry = { enable = false },
     },
   },
 })
 
--- Marksman (Markdown)
 vim.lsp.config("marksman", {
   cmd = { "marksman", "server" },
   filetypes = { "markdown" },
 })
 
--- Biome (web tool chain, linter and formatter as a language server)
 vim.lsp.config("biome", {
-  -- cmd = { "biome", "lsp-proxy" },
-  -- filetypes = {
-  --   "javascript",
-  --   "javascriptreact",
-  --   "typescript",
-  --   "typescriptreact",
-  --   "json",
-  --   "jsonc",
-  --   "css",
-  --   "vue",
-  --   "html",
-  -- },
   root_markers = { "biome.json", "biome.jsonc", ".git", "package.json" },
 })
 
--- Ruff (Python linter/formatter as a server)
 vim.lsp.config("ruff", {
   cmd = { "ruff", "server" },
   filetypes = { "python" },
   root_markers = { "pyproject.toml", "ruff.toml", ".ruff.toml", ".git" },
 })
 
--- ty language server
 vim.lsp.config("ty", {
   cmd = { "ty", "server" },
   filetypes = { "python" },
   root_markers = { "ty.toml", "pyproject.toml", "setup.py", "requirements.txt", ".git" },
 })
 
--- PowerShell
-local ps_es = vim.fn.stdpath("data") .. "/mason/packages/powershell-editor-services/PowerShellEditorServices"
+local ps_es = vim.fn.stdpath("data") .. "/mason/packages/powershell-editor-services"
 vim.lsp.config("powershell_es", {
   shell = "pwsh",
   bundle_path = ps_es,
-  -- cmd = {
-  --   "pwsh",
-  --   "-NoLogo",
-  --   "-NoProfile",
-  --   "-Command",
-  --   "& '" .. ps_es .. "/PowerShellEditorServices/Start-EditorServices.ps1' -Stdio",
-  -- },
-  -- filetypes = { "ps1", "psm1", "psd1" },
   root_markers = { ".git" },
 })
 
@@ -140,29 +104,66 @@ vim.lsp.config("ts_ls", {
   end,
 })
 
--- yaml-language-server uses default config
--- vim.lsp.config("yamlls", {
---
--- })
+vim.lsp.config("texlab", {
+  settings = {
+    texlab = {
+      build = { args = {} },
+      latexFormatter = "tex-fmt",
+    },
+  },
+})
 
-vim.lsp.enable("lua_ls")
-vim.lsp.enable("marksman")
-vim.lsp.enable("biome")
-vim.lsp.enable("ruff")
-vim.lsp.enable("ty")
-vim.lsp.enable("powershell_es")
-vim.lsp.enable("cssls")
-vim.lsp.enable("ts_ls")
-vim.lsp.enable("yamlls")
+local lsp_servers = {
+  "lua_ls",
+  "marksman",
+  "biome",
+  "ruff",
+  "ty",
+  "powershell_es",
+  "cssls",
+  "ts_ls",
+  "yamlls",
+  "texlab",
+  "julials",
+}
+
+vim.g.lsp_auto_start = false
+
+vim.api.nvim_create_user_command("LspStart", function()
+  if vim.g.lsp_auto_start then
+    vim.notify("LSP auto-start already enabled", vim.log.levels.INFO)
+    return
+  end
+  vim.g.lsp_auto_start = true
+  for _, server in ipairs(lsp_servers) do
+    vim.lsp.enable(server)
+  end
+  vim.notify("LSP auto-start enabled", vim.log.levels.INFO)
+end, { desc = "Enable LSP auto-start" })
+
+vim.api.nvim_create_user_command("LspStop", function()
+  vim.g.lsp_auto_start = false
+  for _, server in ipairs(lsp_servers) do
+    vim.lsp.enable(server, false)
+  end
+  for _, client in ipairs(vim.lsp.get_clients()) do
+    client:stop(true)
+  end
+  vim.notify("LSP stopped", vim.log.levels.INFO)
+end, { desc = "Disable LSP and stop all clients" })
+
+vim.keymap.set("n", "<leader>ls", "<cmd>LspStart<CR>", { desc = "Enable LSP auto-start" })
 
 local group = vim.api.nvim_create_augroup("LspFormatOnSaveWeb", {})
 vim.api.nvim_create_autocmd("BufWritePre", {
   group = group,
-  pattern = { "*.ts", "*.tsx", "*.js", "*.jsx", "*.json", "*.css", "*.html", "*.yaml" },
+  pattern = { "*.ts", "*.tsx", "*.js", "*.jsx", "*.json", "*.css", "*.html", "*.yaml", "*.tex", "*.bib", "*.jl" },
   callback = function(args)
+    if not vim.g.lsp_auto_start then
+      return
+    end
     local ft = vim.bo[args.buf].filetype
 
-    -- map filetype -> preferred LSP client
     local formatter_by_ft = {
       javascript = "biome",
       javascriptreact = "biome",
@@ -172,6 +173,9 @@ vim.api.nvim_create_autocmd("BufWritePre", {
       jsonc = "biome",
       css = "biome",
       yaml = "yamlls",
+      latex = "texlab",
+      bibtex = "texlab",
+      julia = "julials",
     }
 
     local preferred = formatter_by_ft[ft]

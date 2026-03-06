@@ -84,60 +84,49 @@ vim.api.nvim_create_autocmd({ "BufEnter", "InsertEnter" }, {
   end,
 })
 
-require("mini.pick").setup()
-
-local MiniPick = require("mini.pick")
-local function pick_oldfiles(opts)
-  opts = opts or {}
-
-  -- Collect oldfiles; filter out non-readable files if desired
-  local items = {}
-  for _, path in ipairs(vim.v.oldfiles or {}) do
-    if vim.fn.filereadable(path) == 1 then
-      table.insert(items, path)
-    end
-  end
-
-  MiniPick.start({
-    source = {
-      name = "Oldfiles",
-
-      items = items,
-
-      -- What is displayed in the picker
-
-      show = MiniPick.default_show,
-
-      -- How matching is performed (default fuzzy)
-      match = MiniPick.default_match,
-
-      -- What happens when user presses <CR>
-      choose = function(item)
-        MiniPick.stop()
-        vim.cmd.edit(vim.fn.fnameescape(item))
-      end,
-
-      -- Optional preview window
-      preview = function(item, buf)
-        if vim.fn.filereadable(item) == 0 then
-          return
-        end
-        vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
-        vim.fn.bufload(item)
-        vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
-        vim.api.nvim_buf_set_option(buf, "modifiable", false)
-        vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.api.nvim_buf_get_lines(vim.fn.bufnr(item), 0, 200, false))
-      end,
-    },
-
-    -- Picker options
-    options = {
-      content_from_bottom = false,
-    },
-  })
-end
-
--- Optional user command
-MiniPick.registry.oldfiles = function()
-  pick_oldfiles()
-end
+-- turns to use fzf-lua
+-- require("mini.pick").setup()
+--
+-- local MiniPick = require("mini.pick")
+-- local function pick_oldfiles(opts)
+--   opts = opts or {}
+--
+--   local items = {}
+--   for _, path in ipairs(vim.v.oldfiles or {}) do
+--     if vim.fn.filereadable(path) == 1 then
+--       table.insert(items, path)
+--     end
+--   end
+--
+--   MiniPick.start({
+--     source = {
+--       name = "Oldfiles",
+--
+--       items = items,
+--
+--
+--       show = MiniPick.default_show,
+--
+--       match = MiniPick.default_match,
+--
+--       preview = function(item, buf)
+--         if vim.fn.filereadable(item) == 0 then
+--           return
+--         end
+--         vim.api.nvim_buf_set_lines(buf, 0, -1, false, {})
+--         vim.fn.bufload(item)
+--         vim.api.nvim_buf_set_option(buf, "bufhidden", "wipe")
+--         vim.api.nvim_buf_set_option(buf, "modifiable", false)
+--         vim.api.nvim_buf_set_lines(buf, 0, -1, false, vim.api.nvim_buf_get_lines(vim.fn.bufnr(item), 0, 200, false))
+--       end,
+--     },
+--
+--     options = {
+--       content_from_bottom = false,
+--     },
+--   })
+-- end
+--
+-- MiniPick.registry.oldfiles = function()
+--   pick_oldfiles()
+-- end

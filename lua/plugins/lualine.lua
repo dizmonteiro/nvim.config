@@ -1,9 +1,8 @@
 vim.pack.add({
   -- { src = "https://github.com/linrongbin16/lsp-progress.nvim", name = "lsp-progress" },
   { src = "https://github.com/nvim-lualine/lualine.nvim", name = "lualine" },
-  { src = "https://github.com/akinsho/bufferline.nvim",   name = "bufferline" },
-}
-)
+  { src = "https://github.com/akinsho/bufferline.nvim", name = "bufferline" },
+})
 
 local C = require("catppuccin.palettes").get_palette("mocha")
 local theme_mocha = {
@@ -76,19 +75,19 @@ local colors = {
   violet = C.mauve,
   magenta = C.maroon,
   blue = C.sky,
-  red = C.red
+  red = C.red,
 }
 
 local conditions = {
   buffer_not_empty = function()
-    return vim.fn.empty(vim.fn.expand('%:t')) ~= 1
+    return vim.fn.empty(vim.fn.expand("%:t")) ~= 1
   end,
   hide_in_width = function()
     return vim.fn.winwidth(0) > 80
   end,
   check_git_workspace = function()
-    local filepath = vim.fn.expand('%:p:h')
-    local gitdir = vim.fn.finddir('.git', filepath .. ';')
+    local filepath = vim.fn.expand("%:p:h")
+    local gitdir = vim.fn.finddir(".git", filepath .. ";")
     return gitdir and #gitdir > 0 and #gitdir < #filepath
   end,
 }
@@ -96,8 +95,8 @@ local conditions = {
 local config = {
   options = {
     theme = theme_mocha,
-    component_separators = '',
-    section_separators = '',
+    component_separators = "",
+    section_separators = "",
   },
   sections = {
     lualine_a = {
@@ -109,13 +108,13 @@ local config = {
     lualine_b = {
       {
         "branch",
-        icon = '',
+        icon = "",
       },
     },
     lualine_c = {
       {
         "diff",
-        symbols = { added = '+', modified = '~', removed = '-' },
+        symbols = { added = "+", modified = "~", removed = "-" },
         diff_color = {
           added = { fg = colors.green },
           modified = { fg = colors.orange },
@@ -128,16 +127,15 @@ local config = {
         file_status = true,
         newfile_status = false,
         path = 3,
-        shorting_target = 100
+        shorting_target = 100,
       },
       {
         "diagnostics",
         sources = { "nvim_diagnostic" },
-        symbols = { error = ' ', warn = ' ', info = ' ', hint = ' ' },
+        symbols = { error = " ", warn = " ", info = " ", hint = " " },
         diagnostics_color = {
           error = { fg = colors.red },
           warn = { fg = colors.yellow },
-          info = { fg = colors.cyan },
           info = { fg = colors.blue },
         },
       },
@@ -153,29 +151,29 @@ local config = {
     },
     lualine_y = {
       {
-        'o:encoding',
+        "o:encoding",
         fmt = string.upper,
         cond = conditions.hide_in_width,
-        color = { fg = colors.green, gui = 'bold' },
+        color = { fg = colors.green, gui = "bold" },
       },
       {
-        'fileformat',
+        "fileformat",
         icons_enabled = true,
-        color = { fg = colors.yellow }
+        color = { fg = colors.yellow },
       },
       {
-        'filetype',
+        "filetype",
         icon_only = true, -- I think icons are cool but Eviline doesn't have them. sigh
-        color = { fg = colors.darkblue, gui = 'bold' },
+        color = { fg = colors.darkblue, gui = "bold" },
       },
     },
     lualine_z = {
       {
         function()
-          return '▊'
+          return "▊"
         end,
         padding = { left = 1 },
-      }
+      },
     },
   },
   inactive_sections = {
@@ -187,12 +185,12 @@ local config = {
         file_status = true,
         newfile_status = false,
         path = 3,
-        shorting_target = 100
+        shorting_target = 100,
       },
     },
-    lualine_x = { 'location' },
+    lualine_x = { "location" },
     lualine_y = {},
-    lualine_z = {}
+    lualine_z = {},
   },
 }
 
@@ -202,7 +200,7 @@ vim.api.nvim_create_autocmd({ "BufReadPre", "BufNewFile", "BufNew" }, {
   callback = function()
     require("lualine").setup(config)
     require("bufferline").setup({
-      highlights = require("catppuccin.special.bufferline").get_theme()
+      highlights = require("catppuccin.special.bufferline").get_theme(),
     })
   end,
 })
