@@ -20,7 +20,6 @@ local function load_plugin(name)
   local elapsed = (vim.loop.hrtime() - start_t) / 1e6
   startup.timings[name] = elapsed
 end
-
 require("plugins.alpha")
 
 load_plugin("lsp")
@@ -29,12 +28,13 @@ load_plugin("mini")
 load_plugin("lualine")
 load_plugin("treesitter")
 load_plugin("fzf-lua")
-load_plugin("ibl")
+load_plugin("blink-indent")
 load_plugin("conform")
 load_plugin("luasnip")
 load_plugin("cmp")
 load_plugin("flash")
 load_plugin("blink-pairs")
+load_plugin("yanky")
 load_plugin("latex")
 load_plugin("trouble")
 load_plugin("outline")

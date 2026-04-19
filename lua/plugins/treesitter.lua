@@ -72,13 +72,16 @@ vim.api.nvim_create_autocmd("FileType", {
     if installed[lang] then
       -- enable_treesitter(buf, ft)
       vim.treesitter.start(buf)
-      if ft == "tex" or ft == "markdown" then
-        vim.bo[buf].syntax = "ON"
-      end
+      -- if ft == "tex" or ft == "markdown" the
+      --   vim.bo[buf].syntax = "ON"
+      -- end
 
       -- folding
       vim.wo[0][0].foldmethod = "expr"
       vim.wo[0][0].foldexpr = "v:lua.vim.treesitter.foldexpr()"
+
+      -- indentatioin
+      vim.bo.indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
     end
   end,
 })

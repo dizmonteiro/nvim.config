@@ -37,6 +37,9 @@ A modern, minimal Neovim configuration targeting **Neovim 12.0+** with native pa
 | [LuaSnip](https://github.com/L3MON4D3/LuaSnip) | Snippet engine |
 | [friendly-snippets](https://github.com/rafamadriz/friendly-snippets) | Pre-made snippets |
 | [lazydev.nvim](https://github.com/folke/lazydev.nvim) | Lua development support |
+| [blink-nerdfont.nvim](https://github.com/MahanRahmati/blink-nerdfont.nvim) | Nerd font completion |
+| [blink-cmp-dat-word](https://github.com/xieyonn/blink-cmp-dat-word) | Offline word completion |
+| [blink-cmp-latex](https://github.com/erooke/blink-cmp-latex) | LaTeX symbol completion |
 
 ### UI & Navigation
 
@@ -46,7 +49,7 @@ A modern, minimal Neovim configuration targeting **Neovim 12.0+** with native pa
 | [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim) | Statusline |
 | [bufferline.nvim](https://github.com/akinsho/bufferline.nvim) | Buffer tabs |
 | [alpha-nvim](https://github.com/goolord/alpha-nvim) | Dashboard |
-| [indent-blankline.nvim](https://github.com/lukas-reineke/indent-blankline.nvim) | Indent guides |
+| [blink.indent](https://github.com/Saghen/blink.indent) | Indent guides |
 | [which-key.nvim](https://github.com/folke/which-key.nvim) | Keybinding help |
 
 ### mini.nvim Suite
@@ -126,6 +129,43 @@ init.lua
 | `<leader>bd` | n | Close current buffer |
 | `<localleader>qt` | n | Quit Neovim |
 | `<localleader>wq` | n | Save and quit |
+
+### Indentation Guides (blink.indent)
+
+Indent guides with scope highlighting and textobject support.
+
+| Key | Mode | Description |
+|-----|------|-------------|
+| `<leader>ii` | n | Go to top of current scope |
+| `<leader>ij` | n | Go to bottom of current scope |
+
+**Colors:** Matching blink.pairs rainbow scheme (blue scope, grey static, purple underline).
+
+### Completion Sources (blink.cmp)
+
+Completion engine with per-filetype sources.
+
+| Source | Filetypes | Description |
+|--------|-----------|-------------|
+| lsp | All files | LSP completions |
+| path | All files | File path completions |
+| snippets | All files | LuaSnip snippets |
+| buffer | All files | Buffer words |
+| nerdfont | All files | Nerd font icons (trigger: `:`) |
+| lazydev | Lua | Lua development in nvim config |
+| datword | Markdown, LaTeX, Julia | Offline word dictionary (medium/long variants) |
+| latex | Julia | LaTeX symbols |
+
+#### datword Source Configuration
+
+Word lists from google-10000-english (USA, no swears):
+
+| Variant | File | Size |
+|---------|-------|------|
+| Medium | `data/words/google-10000-english-usa-no-swears-medium.txt` | Common words |
+| Long | `data/words/google-10000-english-usa-no-swears-long.txt` | Extended vocabulary |
+
+**Build command**: `blink-cmp-dat-word build data/words/google-10000-english-usa-no-swears-*.txt`
 
 ### Indentation Settings
 

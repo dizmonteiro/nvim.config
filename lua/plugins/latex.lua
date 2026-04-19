@@ -15,8 +15,8 @@ vim.g.vimtex_quickfix_ignore_filters = {
   "LaTeX Font Warning:",
   'Package option "final" no longer has any effect with minted v3+',
 }
-vim.g.vimtex_syntax_enabled = 1
-vim.g.vimtex_syntax_conceal_disable = 0
+vim.g.vimtex_syntax_enabled = 0
+vim.g.vimtex_syntax_conceal_disable = 1
 vim.g.vimtex_complete_enabled = 0
-vim.g.vimtex_indent_enabled = 1
+vim.g.vimtex_indent_enabled = 0
 vim.g.vimtex_imaps_enabled = 0

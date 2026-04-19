@@ -13,7 +13,12 @@ vim.pack.add({
   },
   { src = "https://github.com/folke/lazydev.nvim", name = "lazydev" },
   { src = "https://github.com/micangl/cmp-vimtex", name = "cmp-vimtex" },
+  { src = "https://github.com/MahanRahmati/blink-nerdfont.nvim", name = "blink-nerdfont" },
+  { src = "https://github.com/erooke/blink-cmp-latex", name = "blink-cmp-latex" },
+  { src = "https://github.com/xieyonn/blink-cmp-dat-word", name = "blink-cmp-dat-word" },
 })
+
+vim.api.nvim_set_hl(0, "BlinkCmpMenuBorder", { fg = "#89b4fa", bg = "#181825" })
 
 vim.api.nvim_create_autocmd({ "InsertEnter", "CmdlineEnter" }, {
   group = vim.api.nvim_create_augroup("SetupCompletion", { clear = true }),
@@ -26,6 +31,7 @@ vim.api.nvim_create_autocmd({ "InsertEnter", "CmdlineEnter" }, {
         { path = "catppuccin", words = { "catppuccin" } },
         { path = "lualine", words = { "lualine" } },
       },
+      enabled = true,
     })
     -- blink.cmp
     require("blink.cmp").setup({
@@ -35,22 +41,40 @@ vim.api.nvim_create_autocmd({ "InsertEnter", "CmdlineEnter" }, {
       },
 
       sources = {
-        default = { "lsp", "path", "snippets", "buffer" },
+        default = { "lsp", "path", "snippets", "buffer", "nerdfont" },
         per_filetype = {
           lua = { inherit_defaults = true, "lazydev" },
-          -- tex = { "vimtex", "path", "snippets", "buffer" },
+          markdown = { inherit_defaults = true, "datword" },
+          tex = { inherit_defaults = true, "datword" },
+          latex = { inherit_defaults = true, "datword" },
+          julia = { inherit_defaults = true, "latex" },
         },
         providers = {
           lazydev = {
             name = "LazyDev",
             module = "lazydev.integrations.blink",
-            score_offset = 100,
+            score_offset = 120,
           },
-          -- vimtex = {
-          --   name = "vimtex",
-          --   module = "blink.compat.source",
-          --   score_offset = 120,
-          -- },
+          nerdfont = {
+            module = "blink-nerdfont",
+            name = "Nerd Fonts",
+            score_offset = 15,
+          },
+          datword = {
+            module = "blink-cmp-dat-word",
+            name = "Word",
+            opts = {
+              paths = {
+                vim.fn.stdpath("config") .. "/data/words/google-10000-english-usa-no-swears-medium.txt",
+                vim.fn.stdpath("config") .. "/data/words/google-10000-english-usa-no-swears-long.txt",
+              },
+              build_command = "RebuildWords",
+            },
+          },
+          latex = {
+            module = "blink-cmp-latex",
+            name = "Latex",
+          },
         },
       },
 

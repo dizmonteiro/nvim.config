@@ -2,6 +2,11 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = "\\"
 vim.g.have_nerd_font = true
 
+-- if vim.g.neovide then
+vim.o.guifont = "MiWithJBMono"
+-- vim.g.neovide_progress_bar_enabled = true
+-- end
+
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.termguicolors = true
@@ -18,7 +23,7 @@ vim.opt.showmode = false
 -- Show which line your cursor is on
 vim.opt.cursorline = true
 vim.opt.list = true
-vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣" }
+vim.opt.listchars = { tab = "» ", trail = "·", nbsp = "␣", space = "·", multispace = "·" }
 
 vim.opt.smartcase = true
 

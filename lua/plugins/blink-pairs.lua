@@ -19,9 +19,10 @@ local colors = {
 vim.api.nvim_set_hl(0, "BlinkPairsMatch", { fg = colors.orange, bg = colors.surface, bold = true })
 vim.api.nvim_set_hl(0, "BlinkPairsUnmatch", { fg = colors.red })
 vim.api.nvim_set_hl(0, "BlinkPairsWhite", { fg = colors.grey })
+vim.api.nvim_set_hl(0, "BlinkPairsRed", { fg = colors.red })
+vim.api.nvim_set_hl(0, "BlinkPairsOrange", { fg = colors.orange })
 vim.api.nvim_set_hl(0, "BlinkPairsYellow", { fg = colors.yellow })
 vim.api.nvim_set_hl(0, "BlinkPairsGreen", { fg = colors.green })
-vim.api.nvim_set_hl(0, "BlinkPairsPurple", { fg = colors.purple })
 vim.api.nvim_set_hl(0, "BlinkPairsBlue", { fg = colors.blue })
 
 vim.api.nvim_create_autocmd({ "BufReadPre", "BufNewFile" }, {
@@ -43,10 +44,10 @@ vim.api.nvim_create_autocmd({ "BufReadPre", "BufNewFile" }, {
         enabled = true,
         cmdline = false,
         groups = {
-          "BlinkPairsWhite",
+          "BlinkPairsRed",
+          "BlinkPairsOrange",
           "BlinkPairsYellow",
           "BlinkPairsGreen",
-          "BlinkPairsPurple",
           "BlinkPairsBlue",
         },
         priority = 200,
