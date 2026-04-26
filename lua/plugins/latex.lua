@@ -1,4 +1,3 @@
--- vim.g.vimtex_view_method = "SumatraPDF"
 vim.pack.add({
   { src = "https://github.com/lervag/vimtex" },
 })
@@ -15,6 +14,7 @@ vim.g.vimtex_quickfix_ignore_filters = {
   "LaTeX Font Warning:",
   'Package option "final" no longer has any effect with minted v3+',
 }
+vim.g.vimtex_compiler_enabled = 0
 vim.g.vimtex_syntax_enabled = 0
 vim.g.vimtex_syntax_conceal_disable = 1
 vim.g.vimtex_complete_enabled = 0

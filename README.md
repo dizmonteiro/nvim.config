@@ -1,393 +1,151 @@
 # Neovim Configuration
 
-A modern, minimal Neovim configuration targeting **Neovim 12.0+** with native package management.
+Minimal, native-first Neovim **0.12.2** config for Bosch AI Safety work and the path toward a senior/expert deep learning engineer role.
 
-## Features
+## Focus
 
-- **Native Plugin Management**: Uses Neovim 12.0's built-in `vim.pack` instead of third-party managers
-- **Lazy Loading**: Plugins load on-demand via autocmds for fast startup
-- **LaTeX/Math Support**: Extensive LuaSnip snippets for mathematical notation
-- **Catppuccin Theme**: Beautiful, consistent color scheme throughout
-- **Mini.nvim Ecosystem**: Lightweight, well-integrated utilities
+- Python and PyTorch implementation
+- C, C++, and CUDA for lower-level performance work when needed
+- Markdown notes, planning, and research writing
+- LaTeX math-heavy notes
+- YAML and shell support for tooling/config
+- Lua only for maintaining this config
+
+## Principles
+
+- use built-in Neovim first: `vim.pack`, `vim.lsp`, `vim.treesitter`, diagnostics, statusline
+- keep the plugin layer small and practical
+- optimize for reliable daily work, not editor novelty
+
+## What is included
+
+| Component | Purpose |
+| --- | --- |
+| Built-in `vim.pack` | Native package manager |
+| Built-in `vim.treesitter` | Highlighting and folds when a parser is available on `runtimepath` |
+| Built-in `vim.lsp` | Native LSP for role-relevant languages |
+| `mini.files` | File explorer |
+| `mini.pick` | Files, buffers, recent files, live grep |
+| `mini.pairs` | Simple autopairs |
+| `mini.surround` | Surround editing |
+| `blink.cmp` | Completion |
+| `LuaSnip` | Custom snippets, especially math snippets |
+| `lazydev.nvim` | Better Lua completion while maintaining the config |
+| `vimtex` | LaTeX editing support |
+
+## What is intentionally not included
+
+- dashboard plugin
+- custom statusline or tab UI plugins
+- Mason or other LSP installer wrappers
+- theme/plugin-heavy UI layers
+- extra search, outline, diagnostic, terminal, or clipboard plugins when native tools are enough
+
+## Language support
+
+The config is biased toward these workflows:
+
+| Language | Why it is here |
+| --- | --- |
+| Python | Bosch AI Safety implementation and experiments |
+| C / C++ / CUDA | lower-level tooling, kernels, and performance-oriented work when needed |
+| Markdown | notes, planning, and study artifacts |
+| TeX | math notation and technical writing |
+| YAML | configs and experiment metadata |
+| Bash | scripts and tooling |
+| Lua | maintaining the Neovim config |
+
+## LSP
+
+LSP is configured with native `vim.lsp.config()` and auto-enabled only when the server executable is already installed.
+
+Configured servers:
+
+- `lua_ls`
+- `marksman`
+- `ruff`
+- `ty`
+- `texlab`
+- `yamlls`
+- `bashls`
+- `clangd`
+
+Recommended binaries:
+
+- `lua-language-server`
+- `marksman`
+- `ruff`
+- `ty`
+- `texlab`
+- `yaml-language-server`
+- `bash-language-server`
+- `clangd`
+
+There is no Mason dependency. Install language servers with your system package manager, Homebrew, npm, pip, uv, cargo, or other normal tooling.
+
+## Treesitter
+
+- Uses native `vim.treesitter`
+- Starts only when a parser is already available on `runtimepath`
+- C works with Neovim's bundled parser; CUDA is mapped to the `cpp` parser when that parser is available
+- Extra parsers should be added as parser/query plugins, not built from this config
+
+## LaTeX
+
+- `vimtex` is kept for editing support and math-aware snippet workflows
+- compiler integration is disabled by default, so editing TeX files does not require `latexmk`
+
+## Keymaps
+
+| Key | Description |
+| --- | --- |
+| `<leader>e` | open file explorer |
+| `<leader>ff` | find files |
+| `<leader>fg` | live grep |
+| `<leader>fr` | recent files |
+| `<leader>fb` | open buffers picker |
+| `<leader>bd` | close current buffer |
+| `<leader>cd` | show diagnostics on current line |
+| `<leader>q` | open diagnostics location list |
+| `gd` | go to definition |
+| `gr` | references |
+| `K` | hover |
+| `<leader>rn` | rename symbol |
+| `<leader>ca` | code action |
+| `<leader>cf` | format buffer with LSP if supported |
+| `<leader>fs` | edit LuaSnip snippet files |
+| `<localleader>ec` | open config directory |
+| `<localleader>es` | open snippets directory |
 
 ## Requirements
 
-- Neovim 12.0+ (for `vim.pack` and `vim.lsp.config`)
-- A Nerd Font for icons
-- `curl` for downloading prebuilt binaries (Windows)
-- Optional: `stylua` for Lua formatting
+- Neovim **0.12.2**
+- `rg` recommended for live grep
+- optional: `latexmk` if you want external LaTeX compilation outside the default editing flow
+- optional: `stylua` for formatting Lua manually
 
-## Plugin Overview
+## Updating plugins
 
-### Core
-
-| Plugin | Purpose |
-|--------|---------|
-| [nvim-lspconfig](https://github.com/neovim/nvim-lspconfig) | LSP configuration |
-| [mason.nvim](https://github.com/mason-org/mason.nvim) | LSP server management |
-| [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) | Syntax highlighting |
-| [conform.nvim](https://github.com/stevearc/conform.nvim) | Code formatting |
-
-### Completion & Snippets
-
-| Plugin | Purpose |
-|--------|---------|
-| [blink.cmp](https://github.com/saghen/blink.cmp) | Autocompletion engine |
-| [blink.pairs](https://github.com/Saghen/blink.pairs) | Bracket matching with rainbow colors |
-| [LuaSnip](https://github.com/L3MON4D3/LuaSnip) | Snippet engine |
-| [friendly-snippets](https://github.com/rafamadriz/friendly-snippets) | Pre-made snippets |
-| [lazydev.nvim](https://github.com/folke/lazydev.nvim) | Lua development support |
-| [blink-nerdfont.nvim](https://github.com/MahanRahmati/blink-nerdfont.nvim) | Nerd font completion |
-| [blink-cmp-dat-word](https://github.com/xieyonn/blink-cmp-dat-word) | Offline word completion |
-| [blink-cmp-latex](https://github.com/erooke/blink-cmp-latex) | LaTeX symbol completion |
-
-### UI & Navigation
-
-| Plugin | Purpose |
-|--------|---------|
-| [catppuccin](https://github.com/catppuccin/nvim) | Color scheme |
-| [lualine.nvim](https://github.com/nvim-lualine/lualine.nvim) | Statusline |
-| [bufferline.nvim](https://github.com/akinsho/bufferline.nvim) | Buffer tabs |
-| [alpha-nvim](https://github.com/goolord/alpha-nvim) | Dashboard |
-| [blink.indent](https://github.com/Saghen/blink.indent) | Indent guides |
-| [which-key.nvim](https://github.com/folke/which-key.nvim) | Keybinding help |
-
-### mini.nvim Suite
-
-| Plugin | Purpose |
-|--------|---------|
-| mini.ai | Enhanced text objects |
-| mini.surround | Surround operations |
-| mini.files | File explorer |
-| mini.icons | File icons |
-| mini.pick | Fuzzy picker |
-| mini.diff | Diff visualization |
-| mini.splitjoin | Split/join code blocks |
-
-### Motion & Editing
-
-| Plugin | Purpose |
-|--------|---------|
-| [flash.nvim](https://github.com/folke/flash.nvim) | Fast motion/jump |
-
-### Diagnostics & Search
-
-| Plugin | Purpose |
-|--------|---------|
-| [trouble.nvim](https://github.com/folke/trouble.nvim) | Diagnostics, references, quickfix list |
-| [outline.nvim](https://github.com/hedyhli/outline.nvim) | Code outline sidebar |
-| [grug-far.nvim](https://github.com/MagicDuck/grug-far.nvim) | Find and replace |
-
-### Language Support
-
-| Plugin | Purpose |
-|--------|---------|
-| [vimtex](https://github.com/lervag/vimtex) | LaTeX editing |
-
-## Plugin Loading Order
-
+```vim
+:PackUpdate
 ```
+
+## Repo layout
+
+```text
 init.lua
-    │
-    ├── config/options.lua      ← Vim settings
-    ├── config/keymaps.lua      ← Global keymaps  
-    ├── config/autocmds.lua     ← Autocommands
-    │
-    └── plugins/
-        ├── lsp.lua             ← LSP (early for capabilities)
-        ├── catppuccin.lua      ← Theme (early for highlights)
-        ├── mini.lua            ← mini.nvim suite
-        ├── lualine.lua         ← Statusline
-        ├── alpha.lua           ← Dashboard
-        ├── treesitter.lua      ← Syntax
-        ├── ibl.lua             ← Indent guides
-        ├── conform.lua         ← Formatting
-        ├── luasnip.lua         ← Snippet engine (before cmp)
-        ├── cmp.lua             ← Completion (after luasnip)
-        ├── flash.lua           ← Motion
-        ├── blink-pairs.lua     ← Bracket pairs
-        ├── latex.lua           ← LaTeX support
-        ├── trouble.lua         ← Diagnostics list
-        ├── outline.lua         ← Code outline
-        ├── grug-far.lua        ← Find and replace
-        └── which-key.lua       ← Keybinding help
+lua/config/
+lua/plugins/
+lua/snippets/
+lua/utils/
+after/ftplugin/
 ```
 
-## Key Bindings
+## Validation
 
-### Leader Keys
-- `<Space>` - Leader key
-- `\` - Local leader
+Useful checks while editing the config:
 
-### General
-
-| Key | Mode | Description |
-|-----|------|-------------|
-| `<C-s>` | n | Save file |
-| `<Esc>` | n | Clear search highlight |
-| `j` / `k` | n,x,v | Smart down/up (respect display lines) |
-| `<leader>bd` | n | Close current buffer |
-| `<localleader>qt` | n | Quit Neovim |
-| `<localleader>wq` | n | Save and quit |
-
-### Indentation Guides (blink.indent)
-
-Indent guides with scope highlighting and textobject support.
-
-| Key | Mode | Description |
-|-----|------|-------------|
-| `<leader>ii` | n | Go to top of current scope |
-| `<leader>ij` | n | Go to bottom of current scope |
-
-**Colors:** Matching blink.pairs rainbow scheme (blue scope, grey static, purple underline).
-
-### Completion Sources (blink.cmp)
-
-Completion engine with per-filetype sources.
-
-| Source | Filetypes | Description |
-|--------|-----------|-------------|
-| lsp | All files | LSP completions |
-| path | All files | File path completions |
-| snippets | All files | LuaSnip snippets |
-| buffer | All files | Buffer words |
-| nerdfont | All files | Nerd font icons (trigger: `:`) |
-| lazydev | Lua | Lua development in nvim config |
-| datword | Markdown, LaTeX, Julia | Offline word dictionary (medium/long variants) |
-| latex | Julia | LaTeX symbols |
-
-#### datword Source Configuration
-
-Word lists from google-10000-english (USA, no swears):
-
-| Variant | File | Size |
-|---------|-------|------|
-| Medium | `data/words/google-10000-english-usa-no-swears-medium.txt` | Common words |
-| Long | `data/words/google-10000-english-usa-no-swears-long.txt` | Extended vocabulary |
-
-**Build command**: `blink-cmp-dat-word build data/words/google-10000-english-usa-no-swears-*.txt`
-
-### Indentation Settings
-
-Indentation is managed via filetype plugins (`after/ftplugin/`). **Treesitter indentation is disabled** for consistency.
-
-| Language | Spaces | File |
-|----------|---------|-------|
-| Python | 4 | `after/ftplugin/python.lua` |
-| Julia | 4 | `after/ftplugin/julia.lua` |
-| Lua | 2 | `after/ftplugin/lua.lua` |
-| JavaScript/TypeScript | 2 | `after/ftplugin/{javascript,typescript}.lua` |
-| HTML/CSS/SCSS | 2 | `after/ftplugin/{html,css,scss}.lua` |
-| JSON/YAML/TOML | 2 | `after/ftplugin/{json,jsonc,yaml,toml}.lua` |
-| LaTeX | 2 | `after/ftplugin/tex.lua` |
-| Markdown | 2 | `after/ftplugin/markdown.lua` |
-| R | 2 | `after/ftplugin/r.lua` |
-| Bash/Shell/PowerShell | 2 | `after/ftplugin/{bash,sh,powershell}.lua` |
-
-### LSP
-
-LSP is **opt-in** by default. Servers don't start until you enable them.
-
-| Key | Mode | Description |
-|-----|------|-------------|
-| `<leader>ls` | n | Enable LSP auto-start |
-| `<leader>rn` | n | Rename symbol |
-| `<leader>ca` | n | Code action |
-| `<leader>cm` | n | Open Mason |
-| `gd` | n | Go to definition |
-| `K` | n | Hover documentation |
-
-#### Commands
-
-| Command | Description |
-|---------|-------------|
-| `:LspStart` | Enable LSP auto-start for all servers |
-| `:LspStop` | Stop all LSP clients and disable |
-
-#### Configured LSP Servers
-
-| Server | Languages |
-|--------|-----------|
-| lua_ls | Lua |
-| marksman | Markdown |
-| biome | JavaScript, TypeScript, JSON, CSS |
-| ruff | Python |
-| ty | Python (type checker) |
-| powershell_es | PowerShell |
-| cssls | CSS, SCSS, Less |
-| ts_ls | TypeScript, JavaScript |
-| yamlls | YAML |
-| texlab | LaTeX |
-| julials | Julia |
-
-### File Navigation
-
-| Key | Mode | Description |
-|-----|------|-------------|
-| `<leader>e` | n | Open mini.files |
-| `<localleader>ec` | n | Open config directory |
-| `<localleader>es` | n | Open snippets directory |
-
-### Dashboard (alpha-nvim)
-
-Dashboard buttons available on start screen:
-
-| Key | Description |
-|-----|-------------|
-| `n` | New file |
-| `f` | Find file (mini.files) |
-| `r` | Recent files |
-| `g` | Find text (grep) |
-| `s` | Settings (open config) |
-| `p` | Update plugins |
-| `m` | Mason (LSP servers) |
-| `t` | Startup time report |
-| `q` | Quit |
-
-### Snippets (LuaSnip)
-
-| Key | Mode | Description |
-|-----|------|-------------|
-| `<Tab>` | i,s | Store visual selection |
-| `<C-k>` | i,s | Expand/jump forward |
-| `<C-j>` | i,s | Jump backward |
-| `<C-l>` | i | Next choice |
-| `<leader>fs` | n | Edit snippet files |
-
-### Motion
-
-| Key | Mode | Description |
-|-----|------|-------------|
-| `s` | n,x,o | Flash jump |
-
-### Diagnostics (trouble.nvim)
-
-| Key | Mode | Description |
-|-----|------|-------------|
-| `<leader>xx` | n | Toggle diagnostics |
-| `<leader>xX` | n | Buffer diagnostics |
-| `<leader>cs` | n | Document symbols |
-| `<leader>cl` | n | LSP definitions/references |
-| `<leader>xL` | n | Location list |
-| `<leader>xQ` | n | Quickfix list |
-
-### Code Outline (outline.nvim)
-
-| Key | Mode | Description |
-|-----|------|-------------|
-| `<leader>o` | n | Toggle outline sidebar |
-| `<leader>co` | n | Focus outline |
-
-### Search & Replace (grug-far.nvim)
-
-| Key | Mode | Description |
-|-----|------|-------------|
-| `<leader>sr` | n | Search and replace |
-| `<leader>sw` | n | Search word under cursor |
-| `<leader>sv` | x | Search visual selection |
-
-### Surround (mini.surround)
-
-| Key | Description |
-|-----|-------------|
-| `gsa` | Add surround |
-| `gsd` | Delete surround |
-| `gsr` | Replace surround |
-| `gsf` | Find surround (right) |
-| `gsF` | Find surround (left) |
-| `gsh` | Highlight surround |
-
-## Snippets
-
-### Math Snippets (LaTeX/Markdown)
-
-Auto-expanding snippets for mathematical notation:
-
-#### Environments
-| Trigger | Expansion | Context |
-|---------|-----------|---------|
-| `mk` | `$...$` | In text |
-| `dm` | `$$\n...\n$$` | In text |
-| `lm` | `$$ ... $$` | In text |
-
-#### Greek Letters (in math)
-| Trigger | Symbol |
-|---------|--------|
-| `alpha` through `omega` | `\alpha` through `\omega` |
-| `@a` | `\alpha` |
-| `@b` | `\beta` |
-| `@g` / `@G` | `\gamma` / `\Gamma` |
-| `@d` / `@D` | `\delta` / `\Delta` |
-| `@l` / `@L` | `\lambda` / `\Lambda` |
-| etc. | |
-
-#### Operations (in math)
-| Trigger | Expansion |
-|---------|-----------|
-| `__` | `_{...}` |
-| `^^` | `^{...}` |
-| `sr` | `\sqrt{}` |
-| `ff` | `\frac{}{}` |
-| `sq` | `^{2}` |
-| `cb` | `^{3}` |
-| `sum` | `\sum_{}^{}` |
-| `prod` | `\prod_{}^{}` |
-| `xx` | `\times` |
-| `**` | `\cdot` |
-| `+-` | `\pm` |
-
-## Installation
-
-1. Clone to your Neovim config directory:
-   ```bash
-   git clone <repo> ~/.config/nvim  # Linux/Mac
-   git clone <repo> ~/AppData/Local/nvim  # Windows
-   ```
-
-2. Start Neovim. Plugins will be automatically installed.
-
-3. Install LSP servers via Mason:
-   ```vim
-   :Mason
-   ```
-   Then install desired servers (lua-language-server, marksman, etc.)
-
-## Utilities
-
-The `lua/utils/` directory contains helper modules:
-
-| Module | Description |
-|--------|-------------|
-| `ts_utils` | Treesitter-based math zone detection for snippets |
-| `tex_utils` | VimTeX-based math zone detection (alternative) |
-| `luasnip-snip_env` | Global snippet environment (aliases like `s`, `i`, `fmta`) |
-| `startup` | Plugin startup time tracking and reporting |
-
-## Configuration
-
-### StyLua (`.stylua.toml`)
-```toml
-indent_type = "Spaces"
-indent_width = 2
-column_width = 120
+```bash
+nvim --headless '+quitall'
+stylua --check lua/ after/
 ```
-
-### Lua Language Server (`.luarc.json`)
-```json
-{
-  "workspace.library": ["lua/utils/luasnip-snip_env"]
-}
-```
-
-## Commands
-
-| Command | Description |
-|---------|-------------|
-| `:PackUpdate` | Update plugins |
-| `:Mason` | Manage LSP servers |
-| `:StartupTime` | Show plugin startup times |
-| `:FCN` | Search for `FCN=` in buffer (custom) |
-
-## License
-
-MIT

@@ -1,29 +1,5 @@
-vim.pack.add({
-  { src = "https://github.com/mason-org/mason.nvim", name = "mason.nvim" },
-  { src = "https://github.com/neovim/nvim-lspconfig", name = "nvim-lspconfig" },
-})
-
-require("mason").setup({
-  ensure_installed = {
-    "lua-language-server",
-    "stylua",
-    "marksman",
-    "biome",
-    "ruff",
-    "ty",
-    "powershell-editor-services",
-    "ts_ls",
-    "css-lsp",
-    "yaml-language-server",
-    "texlab",
-    "tex-fmt",
-  },
-})
-
-vim.keymap.set("n", "<leader>cm", "<cmd>Mason<CR>", { silent = true })
-
 vim.api.nvim_create_autocmd("LspAttach", {
-  group = vim.api.nvim_create_augroup("SetupLSP", {}),
+  group = vim.api.nvim_create_augroup("SetupLSP", { clear = true }),
   callback = function(ev)
     local buf = ev.buf
     local client = vim.lsp.get_client_by_id(ev.data.client_id)
@@ -31,22 +7,51 @@ vim.api.nvim_create_autocmd("LspAttach", {
       return
     end
 
-    local opts = { buffer = buf }
+    local opts = { buffer = buf, silent = true }
 
-    if client.server_capabilities.definitionProvider then
+    if client:supports_method("textDocument/definition") then
       vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
     end
-    if client.server_capabilities.hoverProvider then
+    if client:supports_method("textDocument/references") then
+      vim.keymap.set("n", "gr", vim.lsp.buf.references, opts)
+    end
+    if client:supports_method("textDocument/hover") then
       vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
     end
-    if client.server_capabilities.renameProvider then
+    if client:supports_method("textDocument/rename") then
       vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
     end
-    if client.server_capabilities.codeActionProvider then
-      vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
+    if client:supports_method("textDocument/codeAction") then
+      vim.keymap.set({ "n", "x" }, "<leader>ca", vim.lsp.buf.code_action, opts)
+    end
+    if client:supports_method("textDocument/formatting") then
+      vim.keymap.set("n", "<leader>cf", function()
+        vim.lsp.buf.format({ bufnr = buf, async = false })
+      end, vim.tbl_extend("force", opts, { desc = "Format buffer" }))
     end
   end,
 })
+
+vim.diagnostic.config({
+  underline = true,
+  virtual_text = {
+    spacing = 2,
+    prefix = "●",
+  },
+  signs = true,
+  severity_sort = true,
+  update_in_insert = false,
+  float = {
+    border = "rounded",
+    source = "if_many",
+  },
+})
+
+local function enable_if_installed(server_name, command)
+  if vim.fn.executable(command) == 1 then
+    vim.lsp.enable(server_name)
+  end
+end
 
 vim.lsp.config("lua_ls", {
   cmd = { "lua-language-server" },
@@ -65,10 +70,7 @@ vim.lsp.config("lua_ls", {
 vim.lsp.config("marksman", {
   cmd = { "marksman", "server" },
   filetypes = { "markdown" },
-})
-
-vim.lsp.config("biome", {
-  root_markers = { "biome.json", "biome.jsonc", ".git", "package.json" },
+  root_markers = { ".marksman.toml", ".git" },
 })
 
 vim.lsp.config("ruff", {
@@ -83,112 +85,42 @@ vim.lsp.config("ty", {
   root_markers = { "ty.toml", "pyproject.toml", "setup.py", "requirements.txt", ".git" },
 })
 
-local ps_es = vim.fn.stdpath("data") .. "/mason/packages/powershell-editor-services"
-vim.lsp.config("powershell_es", {
-  shell = "pwsh",
-  bundle_path = ps_es,
-  root_markers = { ".git" },
-})
-
-vim.lsp.config("cssls", {
-  cmd = { "vscode-css-language-server", "--stdio" },
-  filetypes = { "css", "scss", "less" },
-  init_options = { provideFormatter = false },
-  root_markers = { "package.json", ".git" },
-})
-
-vim.lsp.config("ts_ls", {
-  on_attach = function(client)
-    client.server_capabilities.documentFormattingProvider = false
-    client.server_capabilities.documentRangeFormattingProvider = false
-  end,
-})
-
 vim.lsp.config("texlab", {
+  cmd = { "texlab" },
+  filetypes = { "tex", "plaintex", "bib" },
+  root_markers = { ".latexmkrc", ".git" },
   settings = {
     texlab = {
-      build = { args = {} },
-      latexFormatter = "tex-fmt",
+      build = {
+        onSave = false,
+      },
     },
   },
 })
 
-local lsp_servers = {
-  "lua_ls",
-  "marksman",
-  "biome",
-  "ruff",
-  "ty",
-  "powershell_es",
-  "cssls",
-  "ts_ls",
-  "yamlls",
-  "texlab",
-  "julials",
-}
-
-vim.g.lsp_auto_start = false
-
-vim.api.nvim_create_user_command("LspStart", function()
-  if vim.g.lsp_auto_start then
-    vim.notify("LSP auto-start already enabled", vim.log.levels.INFO)
-    return
-  end
-  vim.g.lsp_auto_start = true
-  for _, server in ipairs(lsp_servers) do
-    vim.lsp.enable(server)
-  end
-  vim.notify("LSP auto-start enabled", vim.log.levels.INFO)
-end, { desc = "Enable LSP auto-start" })
-
-vim.api.nvim_create_user_command("LspStop", function()
-  vim.g.lsp_auto_start = false
-  for _, server in ipairs(lsp_servers) do
-    vim.lsp.enable(server, false)
-  end
-  for _, client in ipairs(vim.lsp.get_clients()) do
-    client:stop(true)
-  end
-  vim.notify("LSP stopped", vim.log.levels.INFO)
-end, { desc = "Disable LSP and stop all clients" })
-
-vim.keymap.set("n", "<leader>ls", "<cmd>LspStart<CR>", { desc = "Enable LSP auto-start" })
-
-local group = vim.api.nvim_create_augroup("LspFormatOnSaveWeb", {})
-vim.api.nvim_create_autocmd("BufWritePre", {
-  group = group,
-  pattern = { "*.ts", "*.tsx", "*.js", "*.jsx", "*.json", "*.css", "*.html", "*.yaml", "*.tex", "*.bib", "*.jl" },
-  callback = function(args)
-    if not vim.g.lsp_auto_start then
-      return
-    end
-    local ft = vim.bo[args.buf].filetype
-
-    local formatter_by_ft = {
-      javascript = "biome",
-      javascriptreact = "biome",
-      typescript = "biome",
-      typescriptreact = "biome",
-      json = "biome",
-      jsonc = "biome",
-      css = "biome",
-      yaml = "yamlls",
-      latex = "texlab",
-      bibtex = "texlab",
-      julia = "julials",
-    }
-
-    local preferred = formatter_by_ft[ft]
-    if not preferred then
-      return
-    end
-
-    vim.lsp.buf.format({
-      bufnr = args.buf,
-      async = false,
-      filter = function(client)
-        return client.name == preferred
-      end,
-    })
-  end,
+vim.lsp.config("yamlls", {
+  cmd = { "yaml-language-server", "--stdio" },
+  filetypes = { "yaml" },
+  root_markers = { ".git" },
 })
+
+vim.lsp.config("bashls", {
+  cmd = { "bash-language-server", "start" },
+  filetypes = { "bash", "sh", "zsh" },
+  root_markers = { ".git", ".bashrc", ".zshrc" },
+})
+
+vim.lsp.config("clangd", {
+  cmd = { "clangd" },
+  filetypes = { "c", "cpp", "objc", "objcpp", "cuda" },
+  root_markers = { "compile_commands.json", "compile_flags.txt", ".git" },
+})
+
+enable_if_installed("lua_ls", "lua-language-server")
+enable_if_installed("marksman", "marksman")
+enable_if_installed("ruff", "ruff")
+enable_if_installed("ty", "ty")
+enable_if_installed("texlab", "texlab")
+enable_if_installed("yamlls", "yaml-language-server")
+enable_if_installed("bashls", "bash-language-server")
+enable_if_installed("clangd", "clangd")

@@ -1,250 +1,132 @@
 # AGENTS.md - Neovim Configuration Guidelines
 
-This document provides guidelines for AI coding agents working on this Neovim v12.0+ configuration.
+This repository is a **minimal, native-first Neovim 0.12.2 config** optimized for Bosch AI Safety work.
 
-## Project Overview
+## Project intent
 
-This is a modern Neovim configuration targeting **Neovim 12.0+** that uses the new built-in `vim.pack` plugin manager instead of lazy.nvim or packer. The configuration emphasizes:
-- Native Neovim capabilities where possible
-- Lazy loading via autocmds with `once = true`
-- Extensive LaTeX/math snippet support via LuaSnip
-- Catppuccin color scheme integration
+Bias changes toward:
 
-## Directory Structure
+- Python and PyTorch engineering
+- C/C++/CUDA when lower-level performance or kernel work is active
+- Markdown planning and research notes
+- LaTeX math writing
+- YAML/Bash/Lua config maintenance
 
+Avoid turning the config back into a broad plugin collection. Native Neovim should be the default choice whenever it is good enough.
+
+## Current architecture
+
+```text
+init.lua
+lua/
+  config/
+    options.lua
+    keymaps.lua
+    autocmds.lua
+    hlgroups.lua
+  plugins/
+    lsp.lua
+    treesitter.lua
+    mini.lua
+    luasnip.lua
+    cmp.lua
+    latex.lua
+  snippets/
+    luasnip/
+  utils/
+    ts_utils.lua
+    tex_utils.lua
+    luasnip-snip_env/
+after/
+  ftplugin/
+nvim-pack-lock.json
+stylua.toml
+.luarc.json
 ```
-nvim/
-├── init.lua              # Entry point, loads all modules in order
-├── lua/
-│   ├── config/           # Core configuration
-│   │   ├── options.lua   # Vim options
-│   │   ├── keymaps.lua   # Global keymaps
-│   │   ├── autocmds.lua  # Autocommands and hooks
-│   │   └── hlgroups.lua  # Highlight groups
-│   ├── plugins/          # Plugin configurations
-│   ├── snippets/         # LuaSnip snippets
-│   │   └── luasnip/      # Lua-based snippets
-│   │       ├── math/     # Math snippets for LaTeX/Markdown
-│   │       ├── markdown/ # Markdown snippets
-│   │       └── lua/      # Lua snippets
-│   └── utils/            # Utility modules
-│       ├── ts_utils.lua  # Treesitter utilities
-│       ├── tex_utils.lua # LaTeX/VimTeX utilities
-│       └── luasnip-snip_env/ # Global snippet environment
-├── after/
-│   └── ftplugin/         # Filetype-specific settings
-├── stylua.toml           # StyLua formatter config
-├── .luarc.json           # Lua language server config
-└── nvim-pack-lock.json   # Plugin lockfile
-```
 
-## Build/Lint/Test Commands
+## Design rules
 
-### Formatting
+1. Prefer built-in Neovim features first: `vim.pack`, `vim.lsp`, `vim.treesitter`, diagnostics, quickfix/location list, native statusline.
+2. Only keep plugins that clearly improve the core role workflow.
+3. Do not add purely cosmetic UI layers unless there is a strong functional reason.
+4. New language/tooling support should be justified against the actual role focus.
+
+## Active plugin set
+
+| File | Purpose |
+| --- | --- |
+| `plugins/lsp.lua` | native LSP setup for role-relevant languages |
+| `plugins/treesitter.lua` | native Treesitter startup when parsers are present |
+| `plugins/mini.lua` | file explorer, picker, pairs, surround |
+| `plugins/luasnip.lua` | snippet engine and snippet loader |
+| `plugins/cmp.lua` | completion with blink.cmp and lazydev |
+| `plugins/latex.lua` | VimTeX editing support without mandatory compiler integration |
+
+## Preferred workflows
+
+- file navigation with `mini.files`
+- search and selection with `mini.pick`
+- diagnostics with native `vim.diagnostic`
+- formatting with LSP when available
+- snippets for Markdown/TeX math writing
+- C/C++/CUDA through native `clangd` when the executable is installed
+
+## Build, lint, and validation
+
 ```bash
-# Format all Lua files with StyLua
-stylua lua/ after/
-
-# Format a single file
-stylua lua/plugins/cmp.lua
-
-# Check formatting without modifying (dry-run)
-stylua --check lua/
-```
-
-### Linting/Type Checking
-```bash
-# Lua language server diagnostics (run inside Neovim)
-# Or use lua-language-server CLI:
+nvim --headless '+quitall'
+stylua --check lua/ after/
 lua-language-server --check lua/
-
-# The LSP is configured in lua/plugins/lsp.lua with lua_ls
 ```
 
-### Testing Snippets
-```bash
-# There is no formal test suite. To verify snippets:
-# 1. Open a .md or .tex file in Neovim
-# 2. Trigger snippets manually (e.g., type "mk" in text for inline math)
-# 3. Use <leader>fs to open snippet editor
-```
+There is no formal automated test suite.
 
-## Plugin Loading Order (init.lua)
+## Key implementation patterns
 
-Plugins are loaded in this specific order for dependency resolution:
+### Native LSP
 
-1. `config.options` - Core vim options
-2. `config.keymaps` - Global keymaps
-3. `config.autocmds` - Autocommands
-4. **Plugins** (in order):
-   - `plugins.lsp` - LSP configuration (must load early)
-   - `plugins.catppuccin` - Colorscheme (load early for highlight groups)
-   - `plugins.mini` - mini.nvim ecosystem
-   - `plugins.lualine` - Statusline and bufferline
-   - `plugins.alpha` - Dashboard
-   - `plugins.treesitter` - Syntax highlighting
-   - `plugins.ibl` - Indent guides
-   - `plugins.conform` - Formatter
-   - `plugins.luasnip` - Snippet engine (before cmp)
-   - `plugins.cmp` - Completion (depends on luasnip)
-   - `plugins.flash` - Motion/jump
-   - `plugins.blink-pairs` - Bracket pairs
-   - `plugins.latex` - LaTeX support
-   - `plugins.which-key` - Keybinding help
-
-## Code Style Guidelines
-
-### Lua Formatting (stylua.toml)
-- **Indent**: 2 spaces
-- **Column width**: 120 characters
-- **No comments** unless explicitly requested
-
-### Imports and Requires
 ```lua
--- Use vim.pack.add for plugins (Neovim 12.0+ native)
-vim.pack.add({
-  { src = "https://github.com/owner/repo", name = "repo" },
+vim.lsp.config("ruff", {
+  cmd = { "ruff", "server" },
+  filetypes = { "python" },
+  root_markers = { "pyproject.toml", ".git" },
 })
 
--- Standard requires at module level
-local ls = require("luasnip")
-local types = require("luasnip.util.types")
+if vim.fn.executable("ruff") == 1 then
+  vim.lsp.enable("ruff")
+end
 ```
 
-### Plugin Configuration Pattern
+### Native Treesitter
+
 ```lua
--- 1. Add plugin with vim.pack.add
+local lang = vim.treesitter.language.get_lang(vim.bo[buf].filetype)
+if lang and vim.treesitter.language.add(lang) then
+  vim.treesitter.start(buf, lang)
+end
+```
+
+### Plugin setup
+
+```lua
 vim.pack.add({
   { src = "https://github.com/owner/repo", name = "plugin-name" },
 })
 
--- 2. Setup with lazy loading via autocmd
-vim.api.nvim_create_autocmd({ "BufReadPre", "BufNewFile" }, {
-  group = vim.api.nvim_create_augroup("SetupPlugin", { clear = true }),
-  once = true,  -- Only run once
-  callback = function()
-    require("plugin").setup({
-      -- options
-    })
-  end,
-})
+require("plugin-name").setup({})
 ```
 
-### Keymap Style
-```lua
--- Use vim.keymap.set with opts table
-vim.keymap.set("n", "<leader>e", "<cmd>lua MiniFiles.open()<CR>", { desc = "Open file explorer" })
+Prefer simple setup over elaborate lazy-loading unless startup cost or side effects justify it.
 
--- For buffer-local maps, include buffer = true
-vim.keymap.set("n", "K", vim.lsp.buf.hover, { buffer = buf, desc = "Hover" })
-```
+## Snippets
 
-### Snippet Style (LuaSnip)
-```lua
--- Import utilities
-local U = require("utils.ts_utils")
-local in_math = U.in_math
-local in_text = U.in_text
+- Snippets live in `lua/snippets/luasnip/`
+- `utils.ts_utils` is the primary math-context helper
+- TeX buffers can fall back to VimTeX math detection when a parser is unavailable
 
-return {
-  s(
-    { trig = "mk", desc = "Inline Math", wordTrig = true, snippetType = "autosnippet", condition = in_text },
-    fmta("$<>$<>", { i(1), i(0) })
-  ),
-}
-```
+## Editing guidance
 
-### Naming Conventions
-- **Files**: `lowercase.lua` or `kebab-case.lua`
-- **Modules**: Return a table `M` or `local M = {}`
-- **Functions**: `snake_case` for local, `camelCase` optional for exported
-- **Constants**: `UPPER_SNAKE_CASE` for module-level constants
-- **Autocmd groups**: Descriptive names like `"SetupLSP"`, `"SetupConform"`
-
-### Error Handling
-```lua
--- Use early returns for nil checks
-local client = vim.lsp.get_client_by_id(ev.data.client_id)
-if not client then
-  return
-end
-
--- Use pcall for optional requires
-local ok, module = pcall(require, "optional-module")
-if not ok then
-  return
-end
-```
-
-### LSP Configuration (Neovim 12.0+)
-```lua
--- Use vim.lsp.config for server definitions
-vim.lsp.config("lua_ls", {
-  cmd = { "lua-language-server" },
-  filetypes = { "lua", "luau" },
-  root_markers = { { ".luarc.json", ".luarc.jsonc" }, ".git" },
-  settings = { ... },
-})
-
--- Use vim.lsp.enable to activate
-vim.lsp.enable("lua_ls")
-```
-
-## Key Leader Mappings
-
-| Mapping | Description |
-|---------|-------------|
-| `<Space>` | Leader key |
-| `\` | Local leader |
-| `<leader>bd` | Close buffer |
-| `<leader>ca` | Code action |
-| `<leader>rn` | Rename |
-| `<leader>cm` | Open Mason |
-| `<leader>e` | Open mini.files |
-| `<leader>fs` | Edit snippets |
-| `<leader>?` | Which-key |
-| `<localleader>ec` | Open config dir |
-| `<localleader>es` | Open snippets dir |
-
-## Plugin-Specific Notes
-
-### blink.cmp
-- Requires prebuilt binary download (handled in autocmds.lua via PackChanged hook)
-- Uses LuaSnip preset for snippet integration
-
-### blink.pairs
-- Also requires binary download
-- Replaces mini.pairs
-
-### Treesitter
-- Parsers installed to `stdpath("data")/site/parser`
-- Auto-updates on PackChanged event
-
-### LuaSnip
-- Custom snippet environment in `lua/utils/luasnip-snip_env/snip_env.lua`
-- Math snippets use treesitter-based `in_math` detection
-- Snippets organized by category in `lua/snippets/luasnip/`
-
-## Common Tasks
-
-### Adding a New Plugin
-1. Create `lua/plugins/plugin-name.lua`
-2. Use `vim.pack.add()` to declare the plugin
-3. Add setup code with lazy loading via autocmd
-4. Add `require("plugins.plugin-name")` to `init.lua` in correct order
-
-### Adding a New Snippet
-1. Choose appropriate file in `lua/snippets/luasnip/`
-2. Use the snippet template with `s()`, `fmta()`, and conditions
-3. For math snippets, use `in_math` or `in_text` conditions
-
-### Updating Plugins
-```vim
-:PackUpdate
-```
-
-## Important Files to Check
-
-- `nvim-pack-lock.json` - Locked plugin versions
-- `.luarc.json` - LSP workspace library configuration
-- `stylua.toml` - Formatter settings
+- Keep changes surgical and readable
+- Remove dead code when simplifying
+- Update `README.md`, `AGENTS.md`, and `nvim-pack-lock.json` when the plugin surface changes
+- Do not add back Mason, dashboard, custom statusline, or extra UI plugins unless explicitly requested

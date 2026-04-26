@@ -1,5 +1,4 @@
 vim.pack.add({
-  { src = "https://github.com/rafamadriz/friendly-snippets", name = "friendly-snippets" },
   {
     src = "https://github.com/L3MON4D3/LuaSnip",
     name = "LuaSnip",
@@ -7,7 +6,6 @@ vim.pack.add({
   },
 })
 
--- load vscode-style snippets from friendly-snippets
 local ls = require("luasnip")
 local types = require("luasnip.util.types")
 
@@ -51,8 +49,4 @@ vim.keymap.set("i", "<c-l>", function()
     ls.change_choice(1)
   end
 end, { silent = true, desc = "Change to next choice for luasnip node" })
--- vim.keymap.set("n", "<localleader>ls", "<cmd>source ~/AppData/Local/nvim/lua/plugins/luasnip.lua<cr>",
---   { desc = "Reload LuaSnip snippets" })
-
--- require("luasnip.loaders.from_vscode").load({ paths = vim.fn.stdpath("config") .. "/snippets/vscode" })
 require("luasnip.loaders.from_lua").lazy_load({ paths = vim.fn.stdpath("config") .. "/lua/snippets/luasnip" })
